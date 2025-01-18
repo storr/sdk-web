@@ -1,5 +1,7 @@
 # Changelog
 
+# [0.1.0-alpha.1](https://github.com/storr/sdk-web/compare/0.1.0-alpha.0...0.1.0-alpha.1) (2025-01-18)
+
 # 0.1.0-alpha.0 (2025-01-18)
 
 
