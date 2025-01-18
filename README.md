@@ -42,7 +42,7 @@ With the SDK Token the Badge SDK can be initialized:
 ```ts
 import * as badge from "@badge-sdk/web";
 
-const badgeSdk = badge.createSdk({accountToken: badgeToken});
+const badgeSdk = badge.makeSdk({token: badgeToken});
 ```
 
 The SDK can now be used to embed a pass template:
