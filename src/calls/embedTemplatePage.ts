@@ -5,6 +5,17 @@ export interface TemplateOptions {
    * id of the template to show
    */
   templateId: string;
+  flags?:
+    | Partial<
+        Record<
+          | "passesTabEnabled"
+          | "templateEditorEnabled"
+          | "editPassesEnabled"
+          | "campaignsTabEnabled",
+          boolean
+        >
+      >
+    | undefined;
 }
 
 /**
@@ -15,7 +26,7 @@ export function embedTemplatePage(
   element: HTMLElement,
   options: TemplateOptions,
 ) {
-  const {templateId} = options;
+  const {templateId, flags} = options;
   const tokenPayload = JSON.parse(atob(sdk.token.split(".")[1] ?? ""));
 
   if (
@@ -31,7 +42,13 @@ export function embedTemplatePage(
 
   const {workspaceHandle} = tokenPayload;
 
-  element.innerHTML = `<iframe src="${sdk.path}?token=${sdk.token}#/${workspaceHandle}/templates/${templateId}/overview" style="${IFRAME_STYLE}" />`;
+  const queryParams = new URLSearchParams({token: sdk.token});
+
+  if (flags) {
+    queryParams.set("flags", encodeURIComponent(JSON.stringify(flags)));
+  }
+
+  element.innerHTML = `<iframe src="${sdk.path}?${queryParams.toString()}#/${workspaceHandle}/templates/${templateId}/overview" style="${IFRAME_STYLE}" />`;
 }
 
 const IFRAME_STYLE = ["width: 100%", "height: 100%", "border: none"].join(";");
