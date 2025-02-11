@@ -5,6 +5,7 @@ export interface TemplateOptions {
    * id of the template to show
    */
   templateId: string;
+  features?: TemplateEmbedFeatures | undefined;
 }
 
 /**
@@ -15,7 +16,7 @@ export function embedTemplatePage(
   element: HTMLElement,
   options: TemplateOptions,
 ) {
-  const {templateId} = options;
+  const {templateId, features} = options;
   const tokenPayload = JSON.parse(atob(sdk.token.split(".")[1] ?? ""));
 
   if (
@@ -31,7 +32,54 @@ export function embedTemplatePage(
 
   const {workspaceHandle} = tokenPayload;
 
-  element.innerHTML = `<iframe src="${sdk.path}?token=${sdk.token}#/${workspaceHandle}/templates/${templateId}/overview" style="${IFRAME_STYLE}" />`;
+  const iframe = createEmbedIframe({
+    token: sdk.token,
+    path: sdk.path,
+    workspaceHandle,
+    templateId,
+    config: {
+      features,
+    },
+  });
+
+  element.replaceChildren(iframe);
 }
 
-const IFRAME_STYLE = ["width: 100%", "height: 100%", "border: none"].join(";");
+interface CreateIframeOptions {
+  token: string;
+  path: string;
+  workspaceHandle: string;
+  templateId: string;
+  config: TemplateEmbedConfig;
+}
+
+interface TemplateEmbedConfig {
+  features?: TemplateEmbedFeatures | undefined;
+}
+
+export interface TemplateEmbedFeatures {
+  passList?: boolean;
+  templateEditor?: boolean;
+  campaigns?: boolean;
+}
+
+function createEmbedIframe(options: CreateIframeOptions): HTMLIFrameElement {
+  const {path, token, workspaceHandle, templateId, config} = options;
+
+  const iframe = document.createElement("iframe");
+
+  iframe.style.width = "100%";
+  iframe.style.height = "100%";
+  iframe.style.border = "none";
+
+  const iframeUrl = new URL(path);
+
+  iframeUrl.searchParams.set("token", token);
+  iframeUrl.searchParams.set("config", JSON.stringify(config));
+
+  iframeUrl.hash = `/${workspaceHandle}/templates/${templateId}/overview`;
+
+  iframe.src = iframeUrl.toString();
+
+  return iframe;
+}

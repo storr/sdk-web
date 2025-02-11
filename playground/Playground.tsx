@@ -21,13 +21,9 @@ interface Settings {
   apiKey: string;
   templateId: string | null;
   permissions: string[];
-  flags: Flags;
+  features: Required<badge.TemplateEmbedFeatures>;
   sdkPath: string;
   apiUrl: string;
-}
-
-interface Flags {
-  passesTabEnabled: boolean;
 }
 
 export function Playground() {
@@ -84,7 +80,7 @@ export function Playground() {
 
         badge.embedTemplatePage(sdk, element, {
           templateId,
-          ...settings.flags,
+          features: settings.features,
         });
       })
       .catch(alert);
@@ -175,13 +171,13 @@ export function Playground() {
             }}
           />
           <MultiSelect
-            label="Flags"
-            data={Object.keys(settings.flags)}
-            value={Object.entries(settings.flags)
+            label="Features"
+            data={Object.keys(settings.features)}
+            value={Object.entries(settings.features)
               .filter(([_, value]) => value)
               .map(([key]) => key)}
             onChange={(value) => {
-              settingChanged("flags", {
+              settingChanged("features", {
                 ...ALL_DISABLED,
                 ...Object.fromEntries(value.map((flag) => [flag, true])),
               });
@@ -222,15 +218,19 @@ const DEFAULT_SETTINGS: Settings = {
   apiKey: "",
   templateId: null,
   permissions: ["workspace:read", "user:write", "template:write"],
-  flags: {
-    passesTabEnabled: true,
+  features: {
+    passList: true,
+    templateEditor: true,
+    campaigns: true,
   },
   sdkPath: "http://localhost:5173/_embed",
   apiUrl: "http://localhost:8000",
 };
 
-const ALL_DISABLED: Flags = {
-  passesTabEnabled: false,
+const ALL_DISABLED: Required<badge.TemplateEmbedFeatures> = {
+  passList: false,
+  templateEditor: false,
+  campaigns: false,
 };
 
 const ALL_PERMISSIONS = [
