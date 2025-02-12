@@ -57,10 +57,17 @@ badge.embedTemplatePage(
   window.document.getElementById("badge-template"),
   {
     templateId: templateId,
-    templateEditorEnabled: true,
+    features: {
+      passList: true,
+      templateEditor: true,
+    },
   },
 );
 ```
+
+There are various features that can be enabled by setting attributes in
+`features`. Additional details can be found in the
+[SDK config doc](https://docs.trybadge.com/docs/sdk-config-embed#badge-features).
 
 ## License
 

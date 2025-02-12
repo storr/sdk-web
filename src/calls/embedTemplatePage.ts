@@ -5,7 +5,7 @@ export interface TemplateOptions {
    * id of the template to show
    */
   templateId: string;
-  features?: TemplateEmbedFeatures;
+  features?: TemplateEmbedFeatures | undefined;
 }
 
 /**
