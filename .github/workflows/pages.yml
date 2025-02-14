@@ -1,0 +1,32 @@
+name: Deploy SDK Playground
+on:
+  push:
+    branches: ["main"]
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: pnpm/action-setup@v4.0.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: package.json
+          cache: pnpm
+      - run: pnpm i
+      - run: pnpm run build playground
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: playground/dist
+      - id: deployment
+        uses: actions/deploy-pages@v4
