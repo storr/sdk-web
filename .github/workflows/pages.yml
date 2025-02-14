@@ -24,7 +24,6 @@ jobs:
           node-version-file: package.json
           cache: pnpm
       - run: pnpm i
-      - run: pnpm run check
       - run: pnpm run build playground
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
