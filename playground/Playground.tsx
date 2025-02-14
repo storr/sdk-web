@@ -3,6 +3,7 @@ import {
   AppShell,
   Burger,
   Button,
+  Code,
   Collapse,
   ColorInput,
   Group,
@@ -10,8 +11,8 @@ import {
   Select,
   Stack,
   Switch,
-  Textarea,
   TextInput,
+  Title,
 } from "@mantine/core";
 import {
   useDebouncedCallback,
@@ -49,8 +50,12 @@ export function Playground() {
   const [appearanceVisible, setAppearanceVisible] = useState(
     !!settings.googleFont || !!settings.primaryColor || !!settings.neutralColor,
   );
+  const [urlsVisible, setUrlsVisible] = useState(false);
 
-  const [currentSettings, setCurrentSettings] = useState<unknown>();
+  const [sdkCall, setSdkCall] = useState<{
+    sdkOptions: badge.SdkOptions;
+    embedTemplatePageOptions: badge.EmbedTemplatePageOptions;
+  }>();
 
   function launchEmbed() {
     if (!ref.current) {
@@ -64,8 +69,6 @@ export function Playground() {
       alert("Please select a template");
       return;
     }
-
-    setCurrentSettings(settings);
 
     fetch(`${settings.apiUrl}/v0/sdkToken`, {
       method: "POST",
@@ -82,18 +85,17 @@ export function Playground() {
       .then((res) => res.json())
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .then((data: any) => {
-        setCurrentSettings({...settings, token: data.token});
-
-        const sdk = badge.makeSdk({
+        const sdkOptions: badge.SdkOptions = {
           token: data.token,
-          path: settings.sdkPath,
-        });
+          path: settings.sdkPath || undefined,
+        };
+        const sdk = badge.makeSdk(sdkOptions);
 
         const googleFont = settings.googleFont || undefined;
         const primaryColor = settings.primaryColor || undefined;
         const neutralColor = settings.neutralColor || undefined;
 
-        badge.embedTemplatePage(sdk, element, {
+        const embedTemplatePageOptions: badge.EmbedTemplatePageOptions = {
           templateId,
           features: settings.features,
           fonts: googleFont
@@ -110,6 +112,13 @@ export function Playground() {
               neutral: neutralColor,
             },
           },
+        };
+
+        badge.embedTemplatePage(sdk, element, embedTemplatePageOptions);
+
+        setSdkCall({
+          sdkOptions,
+          embedTemplatePageOptions,
         });
       })
       .catch(alert);
@@ -155,7 +164,7 @@ export function Playground() {
     <AppShell
       header={{height: 60}}
       navbar={{
-        width: 300,
+        width: 400,
         breakpoint: "sm",
         collapsed: {mobile: !opened},
       }}
@@ -169,13 +178,6 @@ export function Playground() {
       </AppShell.Header>
       <AppShell.Navbar p="md" styles={{navbar: {overflowY: "scroll"}}}>
         <Stack align="stretch" gap="md">
-          <TextInput
-            label="Api Url"
-            value={settings.apiUrl}
-            onChange={(e) => {
-              settingChanged("apiUrl", e.target.value);
-            }}
-          />
           <TextInput
             label="API Key"
             value={settings.apiKey}
@@ -212,13 +214,6 @@ export function Playground() {
               });
             }}
           />
-          <TextInput
-            label="SDK Path"
-            value={settings.sdkPath}
-            onChange={(e) => {
-              settingChanged("sdkPath", e.target.value);
-            }}
-          />
           <Switch
             label="Show Appearance Settings"
             checked={appearanceVisible}
@@ -251,17 +246,39 @@ export function Playground() {
               />
             </Stack>
           </Collapse>
+          <Switch
+            label="Show Endpoint Settings"
+            checked={urlsVisible}
+            onChange={(event) => setUrlsVisible(event.currentTarget.checked)}
+          />
+          <Collapse in={urlsVisible}>
+            <TextInput
+              label="Api Url"
+              value={settings.apiUrl}
+              onChange={(e) => {
+                settingChanged("apiUrl", e.target.value);
+              }}
+            />
+            <TextInput
+              label="SDK Path"
+              value={settings.sdkPath}
+              onChange={(e) => {
+                settingChanged("sdkPath", e.target.value);
+              }}
+            />
+          </Collapse>
           <Button onClick={launchEmbed}>Launch</Button>
           <Button color="red" variant="outline" onClick={resetSettings}>
             Reset Inputs
           </Button>
-          {!!currentSettings && (
-            <Textarea
-              label="Live Settings"
-              disabled
-              autosize
-              value={JSON.stringify(currentSettings, null, 2)}
-            />
+          {!!sdkCall && (
+            <>
+              <Title order={3}>SDK Call</Title>
+              <Code block>{`
+const sdk = badge.makeSdk(${JSON.stringify(sdkCall.sdkOptions, null, 2)});
+
+badge.embedTemplatePage(sdk, element, ${JSON.stringify(sdkCall.embedTemplatePageOptions, null, 2)});`}</Code>
+            </>
           )}
         </Stack>
       </AppShell.Navbar>
@@ -284,11 +301,11 @@ const DEFAULT_SETTINGS: Settings = {
     templateEditor: true,
     campaigns: true,
   },
-  sdkPath: "http://localhost:5173/_embed",
+  sdkPath: "",
   googleFont: "",
   primaryColor: "",
   neutralColor: "",
-  apiUrl: "http://localhost:8000",
+  apiUrl: "https://api.trybadge.com",
 };
 
 const ALL_DISABLED: Required<badge.TemplateEmbedFeatures> = {
