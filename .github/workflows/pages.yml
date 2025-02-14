@@ -25,8 +25,7 @@ jobs:
           cache: pnpm
       - run: pnpm i
       - run: pnpm run build playground
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v3
         with:
           path: playground/dist
       - id: deployment
