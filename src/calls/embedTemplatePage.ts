@@ -6,6 +6,8 @@ export interface TemplateOptions {
    */
   templateId: string;
   features?: TemplateEmbedFeatures | undefined;
+  fonts?: FontSource[] | undefined;
+  appearance?: AppearanceConfig | undefined;
 }
 
 /**
@@ -16,7 +18,7 @@ export function embedTemplatePage(
   element: HTMLElement,
   options: TemplateOptions,
 ) {
-  const {templateId, features} = options;
+  const {templateId, features, fonts, appearance} = options;
   const tokenPayload = JSON.parse(atob(sdk.token.split(".")[1] ?? ""));
 
   if (
@@ -39,6 +41,8 @@ export function embedTemplatePage(
     templateId,
     config: {
       features,
+      fonts,
+      appearance,
     },
   });
 
@@ -55,6 +59,35 @@ interface CreateIframeOptions {
 
 interface TemplateEmbedConfig {
   features?: TemplateEmbedFeatures | undefined;
+  fonts?: FontSource[] | undefined;
+  appearance?: AppearanceConfig | undefined;
+}
+
+export type FontSource = CssFontSource | CustomFontSource;
+
+export interface CssFontSource {
+  cssSrc: string;
+}
+
+export interface CustomFontSource {
+  family: string;
+  src: string;
+  weight?:
+    | "100"
+    | "200"
+    | "300"
+    | "400"
+    | "500"
+    | "600"
+    | "700"
+    | "800"
+    | "900";
+  style?: "normal" | "italic" | "oblique";
+  unicodeRange?: string;
+}
+
+export interface AppearanceConfig {
+  fontFamily?: string | undefined;
 }
 
 export interface TemplateEmbedFeatures {

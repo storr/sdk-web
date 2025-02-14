@@ -23,6 +23,7 @@ interface Settings {
   permissions: string[];
   features: Required<badge.TemplateEmbedFeatures>;
   sdkPath: string;
+  googleFont: string;
   apiUrl: string;
 }
 
@@ -78,9 +79,21 @@ export function Playground() {
           path: settings.sdkPath,
         });
 
+        const googleFont = settings.googleFont || undefined;
+
         badge.embedTemplatePage(sdk, element, {
           templateId,
           features: settings.features,
+          fonts: googleFont
+            ? [
+                {
+                  cssSrc: `https://fonts.googleapis.com/css2?family=${googleFont.replace(/ /g, "+")}&display=swap`,
+                },
+              ]
+            : undefined,
+          appearance: {
+            fontFamily: googleFont,
+          },
         });
       })
       .catch(alert);
@@ -190,6 +203,13 @@ export function Playground() {
               settingChanged("sdkPath", e.target.value);
             }}
           />
+          <TextInput
+            label="Google Font"
+            value={settings.googleFont}
+            onChange={(e) => {
+              settingChanged("googleFont", e.target.value);
+            }}
+          />
           <Button onClick={launchEmbed}>Launch</Button>
           <Button color="red" variant="outline" onClick={resetSettings}>
             Reset Inputs
@@ -224,6 +244,7 @@ const DEFAULT_SETTINGS: Settings = {
     campaigns: true,
   },
   sdkPath: "http://localhost:5173/_embed",
+  googleFont: "",
   apiUrl: "http://localhost:8000",
 };
 

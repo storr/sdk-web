@@ -69,6 +69,10 @@ There are various features that can be enabled by setting attributes in
 `features`. Additional details can be found in the
 [SDK config doc](https://docs.trybadge.com/docs/sdk-config-embed#badge-features).
 
+The appearance of the embed can also be customized. Additional details can be
+found in the
+[SDK config doc](https://docs.trybadge.com/docs/sdk-config-embed#appearance).
+
 ## License
 
 This repository is MIT licensed.
