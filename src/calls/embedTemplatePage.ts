@@ -1,6 +1,6 @@
 import type {BadgeSdk} from "../sdk.ts";
 
-export interface TemplateOptions {
+export interface EmbedTemplatePageOptions {
   /**
    * id of the template to show
    */
@@ -16,7 +16,7 @@ export interface TemplateOptions {
 export function embedTemplatePage(
   sdk: BadgeSdk,
   element: HTMLElement,
-  options: TemplateOptions,
+  options: EmbedTemplatePageOptions,
 ) {
   const {templateId, features, fonts, appearance} = options;
   const tokenPayload = JSON.parse(atob(sdk.token.split(".")[1] ?? ""));
