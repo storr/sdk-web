@@ -87,7 +87,7 @@ export function Playground() {
           fonts: googleFont
             ? [
                 {
-                  cssSrc: `https://fonts.googleapis.com/css2?family=${googleFont.replace(/ /g, "+")}:wght@300;400;500;600;700&display=swap`,
+                  cssSrc: `https://fonts.googleapis.com/css2?family=${googleFont.replace(/ /g, "+")}&display=swap`,
                 },
               ]
             : undefined,
