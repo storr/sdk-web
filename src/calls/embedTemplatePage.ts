@@ -88,6 +88,10 @@ export interface CustomFontSource {
 
 export interface AppearanceConfig {
   fontFamily?: string | undefined;
+  colors?: {
+    primary?: string | undefined;
+    neutral?: string | undefined;
+  };
 }
 
 export interface TemplateEmbedFeatures {
