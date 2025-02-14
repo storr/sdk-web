@@ -3,10 +3,13 @@ import {
   AppShell,
   Burger,
   Button,
+  Collapse,
+  ColorInput,
   Group,
   MultiSelect,
   Select,
   Stack,
+  Switch,
   Textarea,
   TextInput,
 } from "@mantine/core";
@@ -24,6 +27,8 @@ interface Settings {
   features: Required<badge.TemplateEmbedFeatures>;
   sdkPath: string;
   googleFont: string;
+  primaryColor: string;
+  neutralColor: string;
   apiUrl: string;
 }
 
@@ -38,7 +43,12 @@ export function Playground() {
     deserialize: JSON.parse as (
       value: string | undefined,
     ) => typeof DEFAULT_SETTINGS,
+    getInitialValueInEffect: false,
   });
+
+  const [appearanceVisible, setAppearanceVisible] = useState(
+    !!settings.googleFont || !!settings.primaryColor || !!settings.neutralColor,
+  );
 
   const [currentSettings, setCurrentSettings] = useState<unknown>();
 
@@ -80,6 +90,8 @@ export function Playground() {
         });
 
         const googleFont = settings.googleFont || undefined;
+        const primaryColor = settings.primaryColor || undefined;
+        const neutralColor = settings.neutralColor || undefined;
 
         badge.embedTemplatePage(sdk, element, {
           templateId,
@@ -93,6 +105,10 @@ export function Playground() {
             : undefined,
           appearance: {
             fontFamily: googleFont,
+            colors: {
+              primary: primaryColor,
+              neutral: neutralColor,
+            },
           },
         });
       })
@@ -203,13 +219,38 @@ export function Playground() {
               settingChanged("sdkPath", e.target.value);
             }}
           />
-          <TextInput
-            label="Google Font"
-            value={settings.googleFont}
-            onChange={(e) => {
-              settingChanged("googleFont", e.target.value);
-            }}
+          <Switch
+            label="Show Appearance Settings"
+            checked={appearanceVisible}
+            onChange={(event) =>
+              setAppearanceVisible(event.currentTarget.checked)
+            }
           />
+          <Collapse in={appearanceVisible}>
+            <Stack align="stretch" gap="md">
+              <TextInput
+                label="Google Font"
+                value={settings.googleFont}
+                onChange={(e) => {
+                  settingChanged("googleFont", e.target.value);
+                }}
+              />
+              <ColorInput
+                label="Primary Color"
+                value={settings.primaryColor}
+                onChange={(color) => {
+                  settingChanged("primaryColor", color);
+                }}
+              />
+              <ColorInput
+                label="Neutral Color"
+                value={settings.neutralColor}
+                onChange={(color) => {
+                  settingChanged("neutralColor", color);
+                }}
+              />
+            </Stack>
+          </Collapse>
           <Button onClick={launchEmbed}>Launch</Button>
           <Button color="red" variant="outline" onClick={resetSettings}>
             Reset Inputs
@@ -245,6 +286,8 @@ const DEFAULT_SETTINGS: Settings = {
   },
   sdkPath: "http://localhost:5173/_embed",
   googleFont: "",
+  primaryColor: "",
+  neutralColor: "",
   apiUrl: "http://localhost:8000",
 };
 
