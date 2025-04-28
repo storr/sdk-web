@@ -203,13 +203,13 @@ export function Playground() {
           />
           <MultiSelect
             label="Features"
-            data={Object.keys(settings.features)}
+            data={Object.keys(ALL_FEATURES_DISABLED)}
             value={Object.entries(settings.features)
               .filter(([_, value]) => value)
               .map(([key]) => key)}
             onChange={(value) => {
               settingChanged("features", {
-                ...ALL_DISABLED,
+                ...ALL_FEATURES_DISABLED,
                 ...Object.fromEntries(value.map((flag) => [flag, true])),
               });
             }}
@@ -300,6 +300,7 @@ const DEFAULT_SETTINGS: Settings = {
     passList: true,
     templateEditor: true,
     campaigns: true,
+    campaignEditor: true,
   },
   sdkPath: "",
   googleFont: "",
@@ -308,10 +309,11 @@ const DEFAULT_SETTINGS: Settings = {
   apiUrl: "https://api.trybadge.com",
 };
 
-const ALL_DISABLED: Required<badge.TemplateEmbedFeatures> = {
+const ALL_FEATURES_DISABLED: Required<badge.TemplateEmbedFeatures> = {
   passList: false,
   templateEditor: false,
   campaigns: false,
+  campaignEditor: false,
 };
 
 const ALL_PERMISSIONS = [
