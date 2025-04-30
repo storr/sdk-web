@@ -1,5 +1,12 @@
 # Changelog
 
+# [0.1.0](https://github.com/storr/sdk-web/compare/0.1.0-alpha.2...0.1.0) (2025-04-30)
+
+
+### Features
+
+* add `campaignEditor` flag ([#10](https://github.com/storr/sdk-web/issues/10)) ([e27625a](https://github.com/storr/sdk-web/commit/e27625ab5073d55f1a205aaf5de7a1baf7008d83)), closes [#2480](https://github.com/storr/sdk-web/issues/2480)
+
 # [0.1.0-alpha.2](https://github.com/storr/sdk-web/compare/0.1.0-alpha.1...0.1.0-alpha.2) (2025-02-14)
 
 
