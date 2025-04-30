@@ -98,6 +98,7 @@ export interface TemplateEmbedFeatures {
   passList?: boolean;
   templateEditor?: boolean;
   campaigns?: boolean;
+  campaignEditor?: boolean;
 }
 
 function createEmbedIframe(options: CreateIframeOptions): HTMLIFrameElement {
