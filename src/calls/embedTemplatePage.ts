@@ -1,3 +1,4 @@
+import * as z from "@zod/mini";
 import type {BadgeSdk} from "../sdk.ts";
 
 export interface EmbedTemplatePageOptions {
@@ -19,18 +20,7 @@ export function embedTemplatePage(
   options: EmbedTemplatePageOptions,
 ) {
   const {templateId, features, fonts, appearance} = options;
-  const tokenPayload = JSON.parse(atob(sdk.token.split(".")[1] ?? ""));
-
-  if (
-    !(
-      tokenPayload !== null &&
-      typeof tokenPayload === "object" &&
-      "workspaceHandle" in tokenPayload &&
-      typeof tokenPayload.workspaceHandle === "string"
-    )
-  ) {
-    throw new Error("Invalid token payload");
-  }
+  const tokenPayload = parseTokenPayload(sdk.token);
 
   const {workspaceHandle} = tokenPayload;
 
@@ -121,3 +111,30 @@ function createEmbedIframe(options: CreateIframeOptions): HTMLIFrameElement {
 
   return iframe;
 }
+
+function parseTokenPayload(
+  token: string,
+): z.infer<typeof sdkTokenPayloadSchema> {
+  const tokenPayloadResult = sdkTokenPayloadSchema.safeParse(
+    JSON.parse(atob(token.split(".")[1] ?? "")),
+  );
+
+  if (!tokenPayloadResult.success) {
+    throw new Error("Invalid token payload");
+  }
+
+  return tokenPayloadResult.data;
+}
+
+const permissionsSchema = z.templateLiteral([
+  z.enum(["template", "pass", "campaign", "user"]),
+  ":",
+  z.enum(["read", "write"]),
+]);
+
+const sdkTokenPayloadSchema = z.object({
+  workspaceId: z.string(),
+  workspaceHandle: z.string(),
+  templateId: z.optional(z.string()),
+  permissions: z.array(permissionsSchema),
+});
