@@ -20,9 +20,9 @@ export function embedTemplatePage(
   options: EmbedTemplatePageOptions,
 ) {
   const {templateId, features, fonts, appearance} = options;
-  const tokenPayload = parseTokenPayload(sdk.token);
+  const {workspaceHandle, permissions} = parseTokenPayload(sdk.token);
 
-  const {workspaceHandle} = tokenPayload;
+  validatePermissions(permissions, features);
 
   const iframe = createEmbedIframe({
     token: sdk.token,
@@ -112,9 +112,7 @@ function createEmbedIframe(options: CreateIframeOptions): HTMLIFrameElement {
   return iframe;
 }
 
-function parseTokenPayload(
-  token: string,
-): z.infer<typeof sdkTokenPayloadSchema> {
+function parseTokenPayload(token: string): SdkTokenPayload {
   const tokenPayloadResult = sdkTokenPayloadSchema.safeParse(
     JSON.parse(atob(token.split(".")[1] ?? "")),
   );
@@ -126,15 +124,73 @@ function parseTokenPayload(
   return tokenPayloadResult.data;
 }
 
-const permissionsSchema = z.templateLiteral([
-  z.enum(["template", "pass", "campaign", "user"]),
-  ":",
-  z.enum(["read", "write"]),
+function validatePermissions(
+  permissions: SdkTokenPayload["permissions"],
+  features?: TemplateEmbedFeatures,
+): void {
+  const hasPermission = (scope: SdkScope, access: SdkAccess) =>
+    access === "read"
+      ? permissions.includes(`${scope}:read`) ||
+        permissions.includes(`${scope}:write`)
+      : permissions.includes(`${scope}:write`);
+
+  if (!hasPermission("workspace", "read")) {
+    throw new Error("workspace:read permission is required");
+  }
+
+  if (!hasPermission("user", "read")) {
+    throw new Error("user:read permission is required");
+  }
+
+  if (!hasPermission("template", "read")) {
+    throw new Error("template:read permission is required");
+  }
+
+  if (!features) {
+    return;
+  }
+
+  if (features.passList && !hasPermission("pass", "read")) {
+    throw new Error("passList feature requires pass:read permission");
+  }
+
+  if (features.templateEditor && !hasPermission("template", "write")) {
+    throw new Error(
+      "templateEditor feature requires template:write permission",
+    );
+  }
+
+  if (features.campaigns && !hasPermission("campaign", "read")) {
+    throw new Error("campaigns feature requires campaign:read permission");
+  }
+
+  if (features.campaignEditor && !hasPermission("campaign", "write")) {
+    throw new Error(
+      "campaignEditor feature requires campaign:write permission",
+    );
+  }
+}
+
+type SdkScope = z.infer<typeof sdkScopeSchema>;
+const sdkScopeSchema = z.enum([
+  "workspace",
+  "template",
+  "pass",
+  "campaign",
+  "user",
 ]);
 
+type SdkAccess = z.infer<typeof sdkAccessSchema>;
+const sdkAccessSchema = z.enum(["read", "write"]);
+
+const sdkPermissionsSchema = z.templateLiteral([
+  sdkScopeSchema,
+  ":",
+  sdkAccessSchema,
+]);
+
+type SdkTokenPayload = z.infer<typeof sdkTokenPayloadSchema>;
 const sdkTokenPayloadSchema = z.object({
-  workspaceId: z.string(),
   workspaceHandle: z.string(),
-  templateId: z.optional(z.string()),
-  permissions: z.array(permissionsSchema),
+  permissions: z.array(sdkPermissionsSchema),
 });
