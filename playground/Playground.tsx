@@ -295,7 +295,12 @@ badge.embedTemplatePage(sdk, element, ${JSON.stringify(sdkCall.embedTemplatePage
 const DEFAULT_SETTINGS: Settings = {
   apiKey: "",
   templateId: null,
-  permissions: ["workspace:read", "user:write", "template:write"],
+  permissions: [
+    "workspace:read",
+    "user:write",
+    "template:write",
+    "campaign:write",
+  ],
   features: {
     passList: true,
     templateEditor: true,
