@@ -128,17 +128,13 @@ function validatePermissions(
   permissions: SdkPermission[],
   features?: TemplateEmbedFeatures,
 ): void {
-  const hasSomePermission = (validPermissions: SdkPermission[]) => {
-    return permissions.some((permission) =>
-      validPermissions.includes(permission),
+  const hasPermission = (validPermissionSets: SdkPermission[][]) => {
+    return validPermissionSets.every((permissionSet) =>
+      permissionSet.some((permission) => permissions.includes(permission)),
     );
   };
 
-  if (
-    !hasSomePermission(["workspace:read", "workspace:write"]) ||
-    !hasSomePermission(["user:read", "user:write"]) ||
-    !hasSomePermission(["template:read", "template:write"])
-  ) {
+  if (!hasPermission(REQUIRED_PERMISSIONS.base)) {
     throw new Error(
       "workspace:read, user:read, and template:read permissions are required",
     );
@@ -148,24 +144,27 @@ function validatePermissions(
     return;
   }
 
-  if (features.passList && !hasSomePermission(["pass:read", "pass:write"])) {
+  if (features.passList && !hasPermission(REQUIRED_PERMISSIONS.passList)) {
     throw new Error("passList feature requires pass:read permission");
   }
 
-  if (features.templateEditor && !hasSomePermission(["template:write"])) {
+  if (
+    features.templateEditor &&
+    !hasPermission(REQUIRED_PERMISSIONS.templateEditor)
+  ) {
     throw new Error(
       "templateEditor feature requires template:write permission",
     );
   }
 
-  if (
-    features.campaigns &&
-    !hasSomePermission(["campaign:read", "campaign:write"])
-  ) {
+  if (features.campaigns && !hasPermission(REQUIRED_PERMISSIONS.campaigns)) {
     throw new Error("campaigns feature requires campaign:read permission");
   }
 
-  if (features.campaignEditor && !hasSomePermission(["campaign:write"])) {
+  if (
+    features.campaignEditor &&
+    !hasPermission(REQUIRED_PERMISSIONS.campaignEditor)
+  ) {
     throw new Error(
       "campaignEditor feature requires campaign:write permission",
     );
@@ -191,3 +190,19 @@ const sdkTokenPayloadSchema = z.object({
   workspaceHandle: z.string(),
   permissions: z.array(sdkPermissionSchema),
 });
+
+// Each feature requires at least one permission from each inner permission set
+const REQUIRED_PERMISSIONS: Record<
+  keyof TemplateEmbedFeatures | "base",
+  SdkPermission[][]
+> = {
+  base: [
+    ["workspace:read", "workspace:write"],
+    ["user:read", "user:write"],
+    ["template:read", "template:write"],
+  ],
+  passList: [["pass:read", "pass:write"]],
+  templateEditor: [["template:write"]],
+  campaigns: [["campaign:read", "campaign:write"]],
+  campaignEditor: [["campaign:write"]],
+};
