@@ -22,7 +22,7 @@ export function embedTemplatePage(
   const {templateId, features, fonts, appearance} = options;
   const {workspaceHandle, permissions} = parseTokenPayload(sdk.token);
 
-  validatePermissions(permissions, features);
+  validatePermissions(permissions, features ?? {});
 
   const iframe = createEmbedIframe({
     token: sdk.token,
@@ -126,7 +126,7 @@ function parseTokenPayload(token: string): SdkTokenPayload {
 
 function validatePermissions(
   permissions: SdkPermission[],
-  features?: TemplateEmbedFeatures,
+  features: TemplateEmbedFeatures,
 ): void {
   const hasPermission = (validPermissionSets: SdkPermission[][]) => {
     return validPermissionSets.every((permissionSet) =>
@@ -138,10 +138,6 @@ function validatePermissions(
     throw new Error(
       "workspace:read, user:read, and template:read permissions are required",
     );
-  }
-
-  if (!features) {
-    return;
   }
 
   if (features.passList && !hasPermission(REQUIRED_PERMISSIONS.passList)) {
