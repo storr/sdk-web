@@ -1,3 +1,4 @@
+import * as z from "@zod/mini";
 import type {BadgeSdk} from "../sdk.ts";
 
 export interface EmbedTemplatePageOptions {
@@ -17,22 +18,11 @@ export function embedTemplatePage(
   sdk: BadgeSdk,
   element: HTMLElement,
   options: EmbedTemplatePageOptions,
-) {
+): void {
   const {templateId, features, fonts, appearance} = options;
-  const tokenPayload = JSON.parse(atob(sdk.token.split(".")[1] ?? ""));
+  const {workspaceHandle, permissions} = parseTokenPayload(sdk.token);
 
-  if (
-    !(
-      tokenPayload !== null &&
-      typeof tokenPayload === "object" &&
-      "workspaceHandle" in tokenPayload &&
-      typeof tokenPayload.workspaceHandle === "string"
-    )
-  ) {
-    throw new Error("Invalid token payload");
-  }
-
-  const {workspaceHandle} = tokenPayload;
+  validatePermissions(permissions, features ?? {});
 
   const iframe = createEmbedIframe({
     token: sdk.token,
@@ -121,3 +111,91 @@ function createEmbedIframe(options: CreateIframeOptions): HTMLIFrameElement {
 
   return iframe;
 }
+
+function parseTokenPayload(token: string): SdkTokenPayload {
+  const tokenPayloadResult = sdkTokenPayloadSchema.safeParse(
+    JSON.parse(atob(token.split(".")[1] ?? "")),
+  );
+
+  if (!tokenPayloadResult.success) {
+    throw new Error("Invalid token payload");
+  }
+
+  return tokenPayloadResult.data;
+}
+
+function validatePermissions(
+  permissions: SdkPermission[],
+  features: TemplateEmbedFeatures,
+): void {
+  const hasPermission = (validPermissionSets: SdkPermission[][]) => {
+    return validPermissionSets.every((permissionSet) =>
+      permissionSet.some((permission) => permissions.includes(permission)),
+    );
+  };
+
+  if (!hasPermission(REQUIRED_PERMISSIONS)) {
+    throw new Error(
+      REQUIRED_PERMISSIONS.map((set) => set.join(" or ")).join(", ") +
+        " permissions are required",
+    );
+  }
+
+  const failedPermissions = Object.entries(features)
+    .filter(([_, enabled]) => enabled)
+    .map(([feature]) => ({
+      feature,
+      permissions:
+        REQUIRED_PERMISSIONS_BY_FEATURE[feature as keyof TemplateEmbedFeatures],
+    }))
+    .filter(({permissions}) => permissions !== undefined)
+    .filter(({permissions}) => !hasPermission(permissions));
+
+  if (failedPermissions.length > 0) {
+    throw new Error(
+      failedPermissions
+        .map(
+          ({feature, permissions}) =>
+            `${feature} feature requires ${permissions.map((set) => set.join(" or ")).join(", ")} permission(s)`,
+        )
+        .join("\n"),
+    );
+  }
+}
+
+type SdkPermission = z.infer<typeof sdkPermissionSchema>;
+const sdkPermissionSchema = z.enum([
+  "workspace:read",
+  "workspace:write",
+  "template:read",
+  "template:write",
+  "pass:read",
+  "pass:write",
+  "campaign:read",
+  "campaign:write",
+  "user:read",
+  "user:write",
+]);
+
+type SdkTokenPayload = z.infer<typeof sdkTokenPayloadSchema>;
+const sdkTokenPayloadSchema = z.object({
+  workspaceHandle: z.string(),
+  permissions: z.array(sdkPermissionSchema),
+});
+
+const REQUIRED_PERMISSIONS: SdkPermission[][] = [
+  ["workspace:read", "workspace:write"],
+  ["user:read", "user:write"],
+  ["template:read", "template:write"],
+];
+
+// Each feature requires at least one permission from each inner permission set
+const REQUIRED_PERMISSIONS_BY_FEATURE: Record<
+  keyof TemplateEmbedFeatures,
+  SdkPermission[][]
+> = {
+  passList: [["pass:read", "pass:write"]],
+  templateEditor: [["template:write"]],
+  campaigns: [["campaign:read", "campaign:write"]],
+  campaignEditor: [["campaign:write"]],
+};
