@@ -18,7 +18,7 @@ export function embedTemplatePage(
   sdk: BadgeSdk,
   element: HTMLElement,
   options: EmbedTemplatePageOptions,
-) {
+): void {
   const {templateId, features, fonts, appearance} = options;
   const {workspaceHandle, permissions} = parseTokenPayload(sdk.token);
 
