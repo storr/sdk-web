@@ -3,6 +3,9 @@
   "git": {
     "commitMessage": "chore: release v${version}"
   },
+  "hooks": {
+    "after:bump": "pnpm run build"
+  },
   "github": {
     "release": true,
     "releaseName": "${version}"
