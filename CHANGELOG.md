@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/storr/sdk-web/compare/0.1.0...0.1.1) (2025-05-02)
+
+
+### Features
+
+* validate feature configuration against token permissions ([#11](https://github.com/storr/sdk-web/issues/11)) ([a4613bb](https://github.com/storr/sdk-web/commit/a4613bb54d8d13f3152fb3bed525981f9fb86db2)), closes [#5](https://github.com/storr/sdk-web/issues/5)
+
 # [0.1.0](https://github.com/storr/sdk-web/compare/0.1.0-alpha.2...0.1.0) (2025-04-30)
 
 
