@@ -8,7 +8,7 @@ Dependencies can be installed with:
 pnpm i
 ```
 
-## Building
+## Developing
 
 The SDK Playground can be started with:
 
