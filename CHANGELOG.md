@@ -1,5 +1,12 @@
 # Changelog
 
+# [0.2.0](https://github.com/storr/sdk-web/compare/0.1.1...0.2.0) (2025-06-26)
+
+
+### Features
+
+* **umd:** change umd name to badge ([a40ab65](https://github.com/storr/sdk-web/commit/a40ab655502aee2746c819535b0514328b6aa19b))
+
 ## [0.1.1](https://github.com/storr/sdk-web/compare/0.1.0...0.1.1) (2025-05-02)
 
 

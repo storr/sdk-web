@@ -1,6 +1,6 @@
 {
   "name": "@badge-sdk/web",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Embed Badge's mobile wallet management features within your existing application.",
   "keywords": [
     "badge",
